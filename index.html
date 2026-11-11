@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Текст из GitHub</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #5b6577;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --error: #b42318;
+      --shadow: 0 20px 50px rgba(23, 32, 51, 0.12);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1420;
+        --card: #1a2233;
+        --text: #eef2f9;
+        --muted: #a5b0c2;
+        --accent: #3b82f6;
+        --accent-hover: #60a5fa;
+        --error: #fca5a5;
+        --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    main {
+      width: min(760px, 100%);
+      padding: clamp(28px, 6vw, 64px);
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    #text {
+      margin: 0 0 32px;
+      font-size: clamp(1.75rem, 6vw, 3.25rem);
+      font-weight: 700;
+      line-height: 1.25;
+      text-wrap: balance;
+      overflow-wrap: anywhere;
+      min-height: 1.25em;
+    }
+
+    #text.error {
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--error);
+    }
+
+    #text.loading {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:active:not(:disabled) { transform: scale(0.98); }
+    button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    button:disabled { opacity: 0.6; cursor: wait; }
+  </style>
+</head>
+<body>
+  <main>
+    <p id="text" class="loading" aria-live="polite">Загрузка…</p>
+    <button id="refresh" type="button">Обновить</button>
+  </main>
+
+  <script>
+    const textEl = document.getElementById("text");
+    const refreshButton = document.getElementById("refresh");
+
+    async function loadText() {
+      refreshButton.disabled = true;
+      textEl.className = "loading";
+      textEl.textContent = "Загрузка…";
+
+      try {
+        const response = await fetch(`content.txt?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const text = (await response.text()).trim();
+        if (!text) {
+          throw new Error("Файл пуст");
+        }
+
+        textEl.className = "";
+        textEl.textContent = text;
+      } catch (error) {
+        textEl.className = "error";
+        textEl.textContent = "Не удалось загрузить текст. Проверьте подключение к интернету и попробуйте ещё раз.";
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+    refreshButton.addEventListener("click", loadText);
+    loadText();
+  </script>
+</body>
+</html>
